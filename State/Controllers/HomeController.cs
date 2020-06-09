@@ -7,41 +7,87 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using State.Models;
 
 namespace State.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private Counter _counter;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(Counter counter)
         {
-            _logger = logger;
+            _counter = counter;
         }
 
         public IActionResult Index()
         {
-            string resultaat = "Dit is jouw eerste bezoek";
+            //string resultaat = "Dit is jouw eerste bezoek";
 
-            //zijn er cookies?
-            if (Request.Cookies != null)
+            ////zijn er cookies?
+            //if (Request.Cookies != null)
+            //{
+            //    //is er een cookie met de naam lastvisit?
+            //    if (Request.Cookies["lastvisit"] != null)
+            //    {
+            //        //dan lezen we het resultaat uit de cookie
+            //        resultaat = "Welkom terug, je laatste bezoek was op " + Request.Cookies["lastvisit"];
+            //    }
+
+            //    //we slaan het huidige tijdstip op als laatste bezoek
+            //    string laatsteBezoek = DateTime.Now.ToString();
+            //    CookieOptions option = new CookieOptions();
+            //    option.Expires = DateTime.Now.AddDays(365);
+            //    Response.Cookies.Append("lastvisit", laatsteBezoek, option);                
+            //}
+
+            //ViewBag.Tijdstip = resultaat;
+
+            var aantalBezoeken = HttpContext.Session.GetInt32("aantalBezoeken");
+
+            if (aantalBezoeken == null)
+                HttpContext.Session.SetInt32("aantalBezoeken", 1);
+            else
+                HttpContext.Session.SetInt32("aantalBezoeken", (int)aantalBezoeken + 1);
+
+            ViewBag.aantalBezoeken = HttpContext.Session.GetInt32("aantalBezoeken");
+
+            var laatsteBezoek = HttpContext.Session.GetString("lastvisit");
+            if (string.IsNullOrEmpty(laatsteBezoek))
             {
-                //is er een cookie met de naam lastvisit?
-                if (Request.Cookies["lastvisit"] != null)
-                {
-                    //dan lezen we het resultaat uit de cookie
-                    resultaat = "Welkom terug, je laatste bezoek was op " + Request.Cookies["lastvisit"];
-                }
-
-                //we slaan het huidige tijdstip op als laatste bezoek
-                string laatsteBezoek = DateTime.Now.ToString();
-                CookieOptions option = new CookieOptions();
-                option.Expires = DateTime.Now.AddDays(365);
-                Response.Cookies.Append("lastvisit", laatsteBezoek, option);                
+                ViewBag.lastvisit = "geen";
             }
+            else
+            {
+                ViewBag.lastvisit = JsonConvert.DeserializeObject<DateTime>(laatsteBezoek);
+            }
+            var geserializeerdeDatum = JsonConvert.SerializeObject(DateTime.Now);
+            HttpContext.Session.SetString("lastvisit", geserializeerdeDatum);
 
-            ViewBag.Tijdstip = resultaat;
+            _counter.TotaalAantalBezoeken += 1;
+            ViewBag.totaalAantalBezoeken = _counter.TotaalAantalBezoeken;
+
+            return View();
+        }
+
+        public IActionResult Wissen()
+        {
+            //if (Request.Cookies != null)
+            //{
+            //    Response.Cookies.Delete("lastvisit");
+            //}
+            //if (HttpContext.Session.GetInt32("aantalBezoeken") != null)
+            //{
+            //    HttpContext.Session.Remove("aantalBezoeken");
+            //}
+            //if (HttpContext.Session.GetString("lastvisit") != null)
+            //{
+            //    HttpContext.Session.Remove("lastvisit");
+            //}
+
+            HttpContext.Session.Clear();
+            _counter.TotaalAantalBezoeken = 0;
 
             return View();
         }

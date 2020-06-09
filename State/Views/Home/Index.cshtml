@@ -2,10 +2,21 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
+@*<div class="text-center">
     <h1 class="display-4">Cookies</h1>
     <p class="lead">@ViewBag.Tijdstip</p>
     <p>
-        <a href="~/Home/Wissen" class="btn btn-primary btn-lg">Cookie wissen</a>
+        <a href="~/Home/Wissen" class="btn btn-primary btn-lg">Cookie wissen  &raquo;</a>
     </p>
-</div>
+</div>*@
+
+    <div class="text-center">
+        <h1 class="display-4">Sessionstate</h1>
+        <p class="lead">Bezoeken tijdens deze sessie: @ViewBag.aantalBezoeken</p>
+        <p class="lead">Vorige bezoek: @ViewBag.lastvisit</p>
+        <p class="lead">Totaal aantal bezoeken: @ViewBag.totaalAantalBezoeken</p>
+        <p>
+            <a href="~/Home/Index" class="btn btn-primary btn-lg">Refresh  &raquo;</a>
+            <a href="~/Home/Wissen" class="btn btn-primary btn-lg">Reset  &raquo;</a>
+        </p>
+    </div>
